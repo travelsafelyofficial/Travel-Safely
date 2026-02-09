@@ -124,7 +124,7 @@ function App() {
       </div>
 
       {/* Controls Container */}
-      <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-3">
+      <div className="absolute bottom-28 right-4 z-[1000] flex flex-col gap-3">
         {/* Tracking Toggle */}
         <button
           onClick={() => setIsTracking(!isTracking)}
@@ -148,7 +148,7 @@ function App() {
       {destination && (
         <button
           onClick={handleClearNavigation}
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] bg-red-600 text-white px-8 py-4 rounded-2xl shadow-2xl hover:bg-red-700 font-black text-xl border-2 border-red-400 animate-pulse"
+          className="absolute bottom-40 left-1/2 transform -translate-x-1/2 z-[9999] bg-red-600 text-white px-8 py-4 rounded-2xl shadow-2xl hover:bg-red-700 font-black text-xl border-2 border-red-400 animate-pulse"
         >
           End Navigation
         </button>
