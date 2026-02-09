@@ -85,15 +85,15 @@ function App() {
 
   return (
     <div className="relative w-full h-screen bg-black">
-      {error && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[9999] bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg">
-          Error: {error}
+      {error && error !== 'Timeout expired' && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[9999] bg-red-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium">
+          {error}
         </div>
       )}
 
       {/* Hazard Alert Banner */}
       {activeAlert && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[10000] animate-bounce w-full max-w-sm px-4">
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[10000] animate-bounce w-full max-w-sm px-4">
           <div className="bg-red-600/95 backdrop-blur-md text-white px-5 py-5 rounded-2xl shadow-2xl border-4 border-red-400 flex flex-col items-center text-center gap-2">
             <div className="bg-white p-3 rounded-full shadow-md">
               <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
