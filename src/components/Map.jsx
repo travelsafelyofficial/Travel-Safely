@@ -29,6 +29,12 @@ const userIcon = L.divIcon({
 const MapEvents = ({ onMapClick }) => {
     useMapEvents({
         click: (e) => {
+            // "Unlock" audio for browsers
+            if ('speechSynthesis' in window) {
+                const unlocker = new SpeechSynthesisUtterance('');
+                unlocker.volume = 0;
+                window.speechSynthesis.speak(unlocker);
+            }
             onMapClick && onMapClick({ latLng: { lat: () => e.latlng.lat, lng: () => e.latlng.lng } });
         },
     });
