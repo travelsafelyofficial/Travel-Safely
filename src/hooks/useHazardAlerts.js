@@ -40,10 +40,15 @@ export const useHazardAlerts = (userLocation, hazards) => {
 
     const speakAlert = (hazard) => {
         if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(`Warning. Approaching hazard: ${hazard.name}. Please be careful.`);
-            utterance.rate = 1.0;
-            window.speechSynthesis.cancel(); // Stop any current speech
-            window.speechSynthesis.speak(utterance);
+            window.speechSynthesis.cancel();
+
+            // Brief delay ensures cancel finishes
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(`Warning. Approaching hazard: ${hazard.name}. Please be careful.`);
+                utterance.rate = 1.0;
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            }, 50);
         }
     };
 
