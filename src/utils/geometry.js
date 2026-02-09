@@ -1,7 +1,7 @@
 export const calculateDistance = (pos1, pos2) => {
     if (!pos1 || !pos2) return Infinity;
 
-    const R = 6371e3; // metres
+    const R = 6378137; // metres (WGS84)
     const φ1 = pos1.lat * Math.PI / 180;
     const φ2 = pos2.lat * Math.PI / 180;
     const Δφ = (pos2.lat - pos1.lat) * Math.PI / 180;

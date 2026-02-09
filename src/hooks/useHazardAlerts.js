@@ -31,7 +31,7 @@ export const useHazardAlerts = (userLocation, hazards) => {
         });
 
         if (closestHazard) {
-            setActiveAlert(`Warning: Approaching ${closestHazard.name} (Dist: ${minDistance.toFixed(0)}m)`);
+            setActiveAlert(`Warning: Approaching ${closestHazard.name} (Dist: ${minDistance.toFixed(1)}m)`);
         } else {
             setActiveAlert(null);
         }
