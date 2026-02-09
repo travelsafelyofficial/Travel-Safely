@@ -4,7 +4,7 @@ import { useGeolocation } from './hooks/useGeolocation';
 import { useHazardAlerts } from './hooks/useHazardAlerts';
 import AdminLogin from './components/Admin/Login';
 import AdminDashboard from './components/Admin/Dashboard';
-import { Settings, Eye, EyeOff } from 'lucide-react';
+import { Settings, Eye, EyeOff, MapPin } from 'lucide-react';
 
 // Mock Hazards for testing
 const MOCK_HAZARDS = [
@@ -14,6 +14,7 @@ const MOCK_HAZARDS = [
 function App() {
   const [isTracking, setIsTracking] = useState(true);
   const { location, error } = useGeolocation(isTracking);
+  const [showCoords, setShowCoords] = useState(false);
 
   // Initialize from localStorage or fallback to MOCK
   const [hazards, setHazards] = useState(() => {
@@ -108,41 +109,43 @@ function App() {
         </div>
       )}
 
-      <div className="absolute top-4 left-4 z-[9999] bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-xl border border-gray-200">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Travel Safely
-        </h1>
-        {location ? (
-          <p className="text-sm text-gray-600 mt-1">
-            GPS: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-          </p>
-        ) : (
-          <p className="text-sm text-gray-500 mt-1 animate-pulse">
-            {isTracking ? "Locating..." : "Tracking Paused"}
-          </p>
-        )}
-      </div>
-
       {/* Controls Container */}
-      <div className="absolute bottom-28 right-4 z-[1000] flex flex-col gap-3">
-        {/* Tracking Toggle */}
-        <button
-          onClick={() => setIsTracking(!isTracking)}
-          className={`p-3 rounded-full shadow-lg transition-colors text-white ${isTracking ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-500 hover:bg-red-600'
-            }`}
-          title={isTracking ? "Stop Tracking" : "Start Tracking"}
-        >
-          {isTracking ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
-        </button>
+      <div className="absolute bottom-28 right-4 z-[1000] flex flex-col gap-3 items-end">
+        {/* GPS Coordinates Display (Animated) */}
+        {showCoords && location && (
+          <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-blue-200 text-blue-800 font-mono text-xs mb-1 animate-in slide-in-from-right-4 fade-in duration-300">
+            {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+          </div>
+        )}
 
-        {/* Admin Button */}
-        <button
-          onClick={() => setView('login')}
-          className="bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
-          title="Admin Access"
-        >
-          <Settings className="w-6 h-6" />
-        </button>
+        <div className="flex flex-col gap-3">
+          {/* Watch GPS Toggle */}
+          <button
+            onClick={() => setShowCoords(!showCoords)}
+            className={`p-3 rounded-full shadow-lg transition-all ${showCoords ? 'bg-blue-600 text-white scale-110' : 'bg-white text-blue-600 hover:bg-blue-50'}`}
+            title="Watch GPS"
+          >
+            <MapPin className="w-6 h-6" />
+          </button>
+
+          {/* Tracking Toggle */}
+          <button
+            onClick={() => setIsTracking(!isTracking)}
+            className={`p-3 rounded-full shadow-lg transition-colors text-white ${isTracking ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-500 hover:bg-red-600'}`}
+            title={isTracking ? "Stop Tracking" : "Start Tracking"}
+          >
+            {isTracking ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
+          </button>
+
+          {/* Admin Button */}
+          <button
+            onClick={() => setView('login')}
+            className="bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
+            title="Admin Access"
+          >
+            <Settings className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       {destination && (
