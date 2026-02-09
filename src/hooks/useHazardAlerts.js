@@ -4,7 +4,7 @@ import { calculateDistance } from '../utils/geometry';
 export const useHazardAlerts = (userLocation, hazards) => {
     const [activeAlert, setActiveAlert] = useState(null);
     const lastAlertTime = useRef({});
-    const ALERT_COOLDOWN = 60000; // 1 minute cooldown per hazard
+    const ALERT_COOLDOWN = 15000; // 15 seconds cooldown per hazard
 
     useEffect(() => {
         if (!userLocation || !hazards) return;
@@ -42,6 +42,7 @@ export const useHazardAlerts = (userLocation, hazards) => {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(`Warning. Approaching hazard: ${hazard.name}. Please be careful.`);
             utterance.rate = 1.0;
+            window.speechSynthesis.cancel(); // Stop any current speech
             window.speechSynthesis.speak(utterance);
         }
     };
