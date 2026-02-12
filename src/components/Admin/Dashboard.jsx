@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Circle, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Circle, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Plus, Trash2, MapPin, Save, X, Navigation } from 'lucide-react';
+import { Plus, Trash2, MapPin, Save, X, Navigation, Search, Loader2 } from 'lucide-react';
+import { searchLocations } from '../../utils/geocoding';
 
 // Shared Icon Logic (idempotent)
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -28,6 +29,17 @@ const AutoInvalidateSize = () => {
     return null;
 };
 
+// Component to fly to specific location
+const FlyToLocation = ({ lat, lng }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (lat && lng) {
+            map.flyTo([lat, lng], 15);
+        }
+    }, [lat, lng, map]);
+    return null;
+};
+
 // User Dot Icon
 const userIcon = L.divIcon({
     className: 'custom-user-icon',
@@ -37,8 +49,11 @@ const userIcon = L.divIcon({
 });
 
 const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, currentLocation, geoError }) => {
-    const [mode, setMode] = useState('view'); // view, add_manual, add_map
+    const [mode, setMode] = useState('view'); // view, add_manual, add_map, add_search
     const [newHazard, setNewHazard] = useState({ name: '', lat: '', lng: '' });
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
     const mapCenter = [13.7563, 100.5018];
     const [mounted, setMounted] = useState(false);
 
@@ -68,6 +83,26 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, curren
         } else {
             alert(geoError || "Waiting for GPS... Please ensure location is enabled and permissions are granted.");
         }
+    };
+
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+        setIsSearching(true);
+        const results = await searchLocations(searchQuery);
+        setSearchResults(results);
+        setIsSearching(false);
+    };
+
+    const handleSelectSearchResult = (result) => {
+        setNewHazard({
+            name: '',
+            lat: result.lat,
+            lng: result.lng
+        });
+        setMode('add_manual');
+        setSearchQuery('');
+        setSearchResults([]);
     };
 
     const handleSubmit = () => {
@@ -108,6 +143,16 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, curren
                                     <MapPin className="w-5 h-5" /> Select on Map
                                 </button>
                                 <button
+                                    onClick={() => {
+                                        setMode('add_search');
+                                        setSearchQuery('');
+                                        setSearchResults([]);
+                                    }}
+                                    className="w-full bg-purple-100 text-purple-700 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-purple-200 transition-colors font-medium border border-purple-200"
+                                >
+                                    <Search className="w-5 h-5" /> Search Location
+                                </button>
+                                <button
                                     onClick={handleSetCurrentLocation}
                                     className="w-full bg-orange-100 text-orange-700 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-orange-200 transition-colors font-medium border border-orange-200"
                                 >
@@ -119,6 +164,48 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, curren
                                 >
                                     <Plus className="w-5 h-5" /> Enter Coordinates
                                 </button>
+                            </div>
+                        ) : mode === 'add_search' ? (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="font-bold text-gray-800">Search Location</h3>
+                                    <button onClick={() => setMode('view')} className="p-1 hover:bg-gray-100 rounded-full">
+                                        <X className="w-5 h-5 text-gray-500" />
+                                    </button>
+                                </div>
+                                <form onSubmit={handleSearch} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="City, Street, or Place..."
+                                        className="flex-1 border border-gray-300 p-2 rounded-lg"
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 disabled:bg-purple-400"
+                                        disabled={isSearching}
+                                    >
+                                        {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                                    </button>
+                                </form>
+
+                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                    {searchResults.length > 0 ? (
+                                        searchResults.map(result => (
+                                            <button
+                                                key={result.id}
+                                                onClick={() => handleSelectSearchResult(result)}
+                                                className="w-full text-left p-3 text-sm hover:bg-gray-50 rounded-lg border border-transparent hover:border-purple-200 transition-all"
+                                            >
+                                                <p className="font-medium text-gray-800 line-clamp-1">{result.name}</p>
+                                                <p className="text-xs text-gray-500">{result.lat.toFixed(4)}, {result.lng.toFixed(4)}</p>
+                                            </button>
+                                        ))
+                                    ) : (
+                                        !isSearching && searchQuery && <p className="text-center text-sm text-gray-500 py-4">No results found</p>
+                                    )}
+                                </div>
                             </div>
                         ) : (
                             <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
@@ -199,6 +286,9 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, curren
 
                         <AddMarkerOnClick onMapClick={handleMapClick} />
                         <AutoInvalidateSize />
+                        {newHazard.lat && mode === 'add_manual' && (
+                            <FlyToLocation lat={parseFloat(newHazard.lat)} lng={parseFloat(newHazard.lng)} />
+                        )}
 
                         {currentLocation && (
                             <Marker position={[currentLocation.lat, currentLocation.lng]} icon={userIcon} zIndexOffset={1000} />
