@@ -80,6 +80,8 @@ function App() {
         onAddHazard={handleAddHazard}
         onDeleteHazard={handleDeleteHazard}
         onLogout={handleLogout}
+        currentLocation={location}
+        geoError={error}
       />
     );
   }

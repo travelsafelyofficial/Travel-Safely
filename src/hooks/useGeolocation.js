@@ -29,8 +29,8 @@ export const useGeolocation = (enableTracking = true) => {
         // Interval update (every 15 seconds) as requested
         const watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
             enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 5000
+            maximumAge: 5000, // Allow 5s old cache
+            timeout: 15000   // Increase timeout to 15s
         });
 
         return () => navigator.geolocation.clearWatch(watchId);

@@ -41,12 +41,27 @@ const MapEvents = ({ onMapClick }) => {
     return null;
 };
 
-// Component to update center when user location changes
+// Component to sync map size (fixes "sync on scroll" issue)
+const AutoInvalidateSize = () => {
+    const map = useMap();
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [map]);
+    return null;
+};
+
+// Component to update center smoothly when user location changes
 const RecenterAutomatically = ({ lat, lng }) => {
     const map = useMap();
     useEffect(() => {
         if (lat && lng) {
-            map.flyTo([lat, lng], map.getZoom());
+            // Use setView for a more reliable, non-animated snap if the distance is small
+            // but keep flyTo if we want the smooth effect for initial load.
+            // For real-time tracking, flyTo can sometimes fight with manual scrolling.
+            map.setView([lat, lng], map.getZoom(), { animate: true, duration: 1 });
         }
     }, [lat, lng, map]);
     return null;
@@ -63,7 +78,6 @@ const Map = ({ userLocation, hazards = [], destination = null, onMapClick }) => 
                 if (roadCoords) {
                     setRoute(roadCoords);
                 } else {
-                    // Fallback to straight line if API fails
                     setRoute([[userLocation.lat, userLocation.lng], [destination.lat, destination.lng]]);
                 }
             } else {
@@ -85,6 +99,8 @@ const Map = ({ userLocation, hazards = [], destination = null, onMapClick }) => 
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
+            <AutoInvalidateSize />
+
             {/* Handle Clicks */}
             <MapEvents onMapClick={onMapClick} />
 
@@ -93,7 +109,11 @@ const Map = ({ userLocation, hazards = [], destination = null, onMapClick }) => 
 
             {/* User Location Marker */}
             {userLocation && (
-                <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+                <Marker
+                    position={[userLocation.lat, userLocation.lng]}
+                    icon={userIcon}
+                    zIndexOffset={1000}
+                >
                     <Popup>Your Location</Popup>
                 </Marker>
             )}

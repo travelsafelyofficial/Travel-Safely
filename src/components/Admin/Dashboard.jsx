@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Plus, Trash2, MapPin, Save, X } from 'lucide-react';
+import { Plus, Trash2, MapPin, Save, X, Navigation } from 'lucide-react';
 
 // Shared Icon Logic (idempotent)
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -16,20 +16,27 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Map Event Component for Admin
-const AddMarkerOnClick = ({ onMapClick }) => {
-    useMapEvents({
-        click: (e) => {
-            // Safe check
-            if (onMapClick) {
-                onMapClick({ latLng: { lat: () => e.latlng.lat, lng: () => e.latlng.lng } });
-            }
-        },
-    });
+// Component to sync map size
+const AutoInvalidateSize = () => {
+    const map = useMap();
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [map]);
     return null;
 };
 
-const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout }) => {
+// User Dot Icon
+const userIcon = L.divIcon({
+    className: 'custom-user-icon',
+    html: `<div style="background-color: #4285F4; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+    iconSize: [15, 15],
+    iconAnchor: [7, 7]
+});
+
+const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, currentLocation, geoError }) => {
     const [mode, setMode] = useState('view'); // view, add_manual, add_map
     const [newHazard, setNewHazard] = useState({ name: '', lat: '', lng: '' });
     const mapCenter = [13.7563, 100.5018];
@@ -47,6 +54,19 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout }) => {
                 lat: e.latLng.lat(),
                 lng: e.latLng.lng()
             }));
+        }
+    };
+
+    const handleSetCurrentLocation = () => {
+        if (currentLocation) {
+            setNewHazard({
+                name: '',
+                lat: currentLocation.lat,
+                lng: currentLocation.lng
+            });
+            setMode('add_manual');
+        } else {
+            alert(geoError || "Waiting for GPS... Please ensure location is enabled and permissions are granted.");
         }
     };
 
@@ -86,6 +106,12 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout }) => {
                                     className="w-full bg-blue-100 text-blue-700 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-200 transition-colors font-medium"
                                 >
                                     <MapPin className="w-5 h-5" /> Select on Map
+                                </button>
+                                <button
+                                    onClick={handleSetCurrentLocation}
+                                    className="w-full bg-orange-100 text-orange-700 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-orange-200 transition-colors font-medium border border-orange-200"
+                                >
+                                    <Navigation className="w-5 h-5" /> Set at Current Location
                                 </button>
                                 <button
                                     onClick={() => setMode('add_manual')}
@@ -172,6 +198,11 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout }) => {
                         />
 
                         <AddMarkerOnClick onMapClick={handleMapClick} />
+                        <AutoInvalidateSize />
+
+                        {currentLocation && (
+                            <Marker position={[currentLocation.lat, currentLocation.lng]} icon={userIcon} zIndexOffset={1000} />
+                        )}
 
                         {hazards.map(hazard => (
                             <div key={hazard.id}>
