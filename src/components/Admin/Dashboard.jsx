@@ -40,6 +40,18 @@ const FlyToLocation = ({ lat, lng }) => {
     return null;
 };
 
+// Map Event Component for Admin
+const AddMarkerOnClick = ({ onMapClick }) => {
+    useMapEvents({
+        click: (e) => {
+            if (onMapClick) {
+                onMapClick({ latLng: { lat: () => e.latlng.lat, lng: () => e.latlng.lng } });
+            }
+        },
+    });
+    return null;
+};
+
 // User Dot Icon
 const userIcon = L.divIcon({
     className: 'custom-user-icon',
