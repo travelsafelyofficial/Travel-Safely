@@ -4,7 +4,7 @@ import { calculateDistance } from '../utils/geometry';
 export const useHazardAlerts = (userLocation, hazards) => {
     const [activeAlert, setActiveAlert] = useState(null);
     const lastAlertTime = useRef({});
-    const ALERT_COOLDOWN = 15000; // 15 seconds cooldown per hazard
+    const ALERT_COOLDOWN = 10000; // 10 seconds cooldown per hazard
 
     useEffect(() => {
         if (!userLocation || !hazards) return;
