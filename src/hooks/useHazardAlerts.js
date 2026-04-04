@@ -15,7 +15,7 @@ export const useHazardAlerts = (userLocation, hazards) => {
         hazards.forEach(hazard => {
             const distance = calculateDistance(userLocation, hazard.position);
 
-            if (distance <= 500) {
+            if (distance <= 100) {
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestHazard = hazard;

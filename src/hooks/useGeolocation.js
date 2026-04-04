@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { calculateDistance } from '../utils/geometry';
 
 export const useGeolocation = (enableTracking = true) => {
     const [location, setLocation] = useState(null);
     const [error, setError] = useState(null);
+    const lastLoc = useRef(null);
 
     useEffect(() => {
         if (!navigator.geolocation) {
@@ -14,7 +16,12 @@ export const useGeolocation = (enableTracking = true) => {
 
         const handleSuccess = (position) => {
             const { latitude, longitude } = position.coords;
-            setLocation({ lat: latitude, lng: longitude });
+            const newLocation = { lat: latitude, lng: longitude };
+            
+            if (!lastLoc.current || calculateDistance(lastLoc.current, newLocation) > 5) {
+                lastLoc.current = newLocation;
+                setLocation(newLocation);
+            }
         };
 
         const handleError = (error) => {

@@ -17,6 +17,15 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+const redHazardIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
 // Component to sync map size
 const AutoInvalidateSize = () => {
     const map = useMap();
@@ -310,10 +319,10 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, curren
                             <div key={hazard.id}>
                                 <Circle
                                     center={[hazard.position.lat, hazard.position.lng]}
-                                    radius={500}
+                                    radius={100}
                                     pathOptions={{ color: 'red', fillColor: '#FF0000', fillOpacity: 0.2 }}
                                 />
-                                <Marker position={[hazard.position.lat, hazard.position.lng]} icon={DefaultIcon} />
+                                <Marker position={[hazard.position.lat, hazard.position.lng]} icon={redHazardIcon} />
                             </div>
                         ))}
 
@@ -322,7 +331,7 @@ const AdminDashboard = ({ hazards, onAddHazard, onDeleteHazard, onLogout, curren
                             <Marker
                                 position={[parseFloat(newHazard.lat), parseFloat(newHazard.lng)]}
                                 opacity={0.7}
-                                icon={DefaultIcon}
+                                icon={redHazardIcon}
                             />
                         )}
                     </MapContainer>
